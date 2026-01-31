@@ -1,0 +1,67 @@
+# Sample URLs for testing the concurrent website checker
+# Lines starting with # are comments and will be ignored
+
+# Search Engines
+https://www.google.com
+https://www.bing.com
+https://duckduckgo.com
+
+# Developer Platforms
+https://www.github.com
+https://github.com/golang/go
+https://gitlab.com
+https://bitbucket.org
+
+# Documentation Sites
+https://go.dev
+https://golang.org/doc
+https://pkg.go.dev
+
+# Q&A Sites
+https://stackoverflow.com
+https://stackexchange.com
+
+# News & Media
+https://news.ycombinator.com
+https://www.reddit.com
+https://www.bbc.com
+https://www.cnn.com
+
+# Technology Companies
+https://www.microsoft.com
+https://www.apple.com
+https://www.amazon.com
+
+# Cloud Providers
+https://aws.amazon.com
+https://azure.microsoft.com
+https://cloud.google.com
+
+# Development Tools
+https://www.docker.com
+https://kubernetes.io
+https://www.postgresql.org
+https://www.mongodb.com
+https://redis.io
+
+# Package Managers
+https://www.npmjs.com
+https://pypi.org
+
+# Video Platforms
+https://www.youtube.com
+https://vimeo.com
+
+# Social Media
+https://www.twitter.com
+https://www.linkedin.com
+
+# Educational
+https://www.wikipedia.org
+https://www.khanacademy.org
+
+# Invalid URLs for testing error handling
+https://thisurldoesnotexist404.com
+https://invalid-domain-test.invalid
+https://example-nonexistent-site.xyz
+

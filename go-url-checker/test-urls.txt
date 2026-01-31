@@ -1,0 +1,7 @@
+https://www.google.com
+https://www.github.com
+https://www.stackoverflow.com
+https://www.wikipedia.org
+https://www.reddit.com
+https://thisurldoesnotexist404.com
+https://invalid-domain-test-404.xyz
