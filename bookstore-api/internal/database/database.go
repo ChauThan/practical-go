@@ -3,8 +3,8 @@ package database
 import (
 	"fmt"
 
-	"go-bookstore-api/internal/config"
-	"go-bookstore-api/internal/models"
+	"bookstore-api/internal/config"
+	"bookstore-api/internal/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

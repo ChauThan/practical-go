@@ -27,7 +27,7 @@ This project demonstrates:
 ## 📁 Project Structure
 
 ```
-go-task-cli/
+task-cli/
 ├── main.go       # Complete application code
 ├── tasks.json    # Data persistence file (auto-created)
 ├── go.mod        # Go module file
@@ -41,7 +41,7 @@ go-task-cli/
 
 ### Clone and Setup
 ```bash
-cd go-task-cli
+cd task-cli
 go build
 ```
 
@@ -88,14 +88,14 @@ After running `go build`, you can use the compiled binary:
 
 **Windows:**
 ```bash
-.\go-task-cli.exe add "My task"
-.\go-task-cli.exe list
+.\task-cli.exe add "My task"
+.\task-cli.exe list
 ```
 
 **Linux/Mac:**
 ```bash
-./go-task-cli add "My task"
-./go-task-cli list
+./task-cli add "My task"
+./task-cli list
 ```
 
 ## 🏗️ Code Structure

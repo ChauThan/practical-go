@@ -1,8 +1,8 @@
 package services
 
 import (
-	"go-bookstore-api/internal/models"
-	"go-bookstore-api/internal/repositories"
+	"bookstore-api/internal/models"
+	"bookstore-api/internal/repositories"
 )
 
 // BookService defines the interface for book business logic.

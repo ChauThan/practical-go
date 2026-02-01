@@ -4,12 +4,12 @@ import (
 	"log"
 	"net/http"
 
-	"go-bookstore-api/internal/config"
-	"go-bookstore-api/internal/database"
-	"go-bookstore-api/internal/handlers"
-	"go-bookstore-api/internal/middleware"
-	"go-bookstore-api/internal/repositories"
-	"go-bookstore-api/internal/services"
+	"bookstore-api/internal/config"
+	"bookstore-api/internal/database"
+	"bookstore-api/internal/handlers"
+	"bookstore-api/internal/middleware"
+	"bookstore-api/internal/repositories"
+	"bookstore-api/internal/services"
 )
 
 func main() {

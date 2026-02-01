@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"go-bookstore-api/internal/models"
-	"go-bookstore-api/internal/services"
+	"bookstore-api/internal/models"
+	"bookstore-api/internal/services"
 )
 
 // BookHandler handles HTTP requests for books.

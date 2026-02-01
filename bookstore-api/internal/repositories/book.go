@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"go-bookstore-api/internal/models"
+	"bookstore-api/internal/models"
 
 	"gorm.io/gorm"
 )

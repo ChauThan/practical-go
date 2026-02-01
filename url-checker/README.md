@@ -27,7 +27,7 @@ This project showcases key Go concurrency primitives:
 
 ```bash
 # Clone the repository
-cd go-url-checker
+cd url-checker
 
 # Build the application
 go build -o url-checker
@@ -131,7 +131,7 @@ Failed: 4
 ## Project Structure
 
 ```
-go-url-checker/
+url-checker/
 ├── main.go          # Entry point and orchestration
 ├── reader.go        # URL file reading and validation
 ├── worker.go        # Worker pool implementation
