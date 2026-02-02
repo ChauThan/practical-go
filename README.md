@@ -9,3 +9,5 @@ A hands-on workspace dedicated to mastering the Go programming language through 
 **[url-checker](./url-checker)** - A concurrent website checker and downloader demonstrating Go concurrency patterns: goroutines, channels, WaitGroups, mutex, and the worker pool pattern for bounded parallelism.
 
 **[bookstore-api](./bookstore-api)** - A RESTful API for bookstore management demonstrating layered architecture (handlers → services → repositories), JWT authentication, GORM with PostgreSQL, and Go 1.22+ routing patterns.
+
+**[crypto-monitor](./crypto-monitor)** - A real-time crypto price monitor demonstrating WebSocket streaming, Redis caching, alert pipelines, and context-driven shutdown.

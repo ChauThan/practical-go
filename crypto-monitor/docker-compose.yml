@@ -1,0 +1,17 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  crypto-monitor:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      REDIS_ADDR: redis:6379
+      BINANCE_SYMBOLS: BTCUSDT,ETHUSDT,SOLUSDT
+      ALERT_THRESHOLD_PCT: "0.005"
+      INTERNAL_WS_ADDR: ":8080"
+    depends_on:
+      - redis
