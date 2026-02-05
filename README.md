@@ -4,6 +4,8 @@ A hands-on workspace dedicated to mastering the Go programming language through 
 
 ## Projects
 
+**[basic](./basic)** - A collection of fundamental Go programming examples.
+
 **[task-cli](./task-cli)** - A CLI task manager demonstrating Go fundamentals: structs, slices, error handling, and JSON persistence without traditional OOP concepts.
 
 **[url-checker](./url-checker)** - A concurrent website checker and downloader demonstrating Go concurrency patterns: goroutines, channels, WaitGroups, mutex, and the worker pool pattern for bounded parallelism.
