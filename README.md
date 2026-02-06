@@ -2,6 +2,19 @@
 
 A hands-on workspace dedicated to mastering the Go programming language through practice, experimentation, and building real-world applications.
 
+## Getting Go on Ubuntu
+
+```bash
+sudo rm -rf /usr/local/go
+wget https://go.dev/dl/go1.25.7.linux-amd64.tar.gz -O go-latest.tar.gz
+sudo tar -C /usr/local -xzf go-latest.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+source ~/.bashrc
+go version
+```
+
+Check [go.dev/dl](https://go.dev/dl/) for the latest version.
+
 ## Projects
 
 **[basic](./basic)** - A collection of fundamental Go programming examples.
