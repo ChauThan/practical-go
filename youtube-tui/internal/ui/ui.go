@@ -1,2 +1,314 @@
-// Package ui handles all terminal user interface components
+// Package ui implements the terminal user interface for the YouTube TUI application
+// using the Bubble Tea framework
 package ui
+
+import (
+	"fmt"
+
+	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+
+	"youtube-tui/internal/models"
+	"youtube-tui/pkg/client"
+)
+
+const (
+	boxWidth      = 60
+	selectorWidth = 50
+	selectorLimit = 156
+)
+
+type focusSection int
+
+const (
+	focusSearch focusSection = iota
+	focusResults
+)
+
+// searchDoneMsg is sent when a search completes successfully
+type searchDoneMsg struct {
+	results []models.Video
+}
+
+// searchErrMsg is sent when a search fails
+type searchErrMsg struct {
+	err error
+}
+
+// Model holds the state for the TUI application
+type Model struct {
+	focus       focusSection
+	searchInput textinput.Model
+	results     []models.Video
+	loading     bool
+	errorMsg    string
+}
+
+// NewModel creates a new Model with default state
+func NewModel() Model {
+	ti := textinput.New()
+	ti.Placeholder = "Enter search query..."
+	ti.Focus()
+	ti.CharLimit = selectorLimit
+	ti.Width = selectorWidth
+
+	return Model{
+		focus:       focusSearch,
+		searchInput: ti,
+		results:     []models.Video{},
+		loading:     false,
+		errorMsg:    "",
+	}
+}
+
+// Init returns the initial command for the application
+func (m Model) Init() tea.Cmd {
+	return nil
+}
+
+// Update handles messages and updates the model state
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.Type {
+		case tea.KeyCtrlC, tea.KeyCtrlQ, tea.KeyEsc:
+			return m, tea.Quit
+		case tea.KeyRunes:
+			if err := m.handleKeyRunes(string(msg.Runes)); err != nil {
+				return m, tea.Quit
+			}
+		case tea.KeyEnter:
+			if m.focus == focusSearch {
+				cmd = m.handleEnterKey()
+				if cmd != nil {
+					return m, cmd
+				}
+			}
+		}
+
+	case searchDoneMsg:
+		m.loading = false
+		m.results = msg.results
+		m.focus = focusResults
+		m.searchInput.Blur()
+		return m, nil
+
+	case searchErrMsg:
+		m.loading = false
+		m.errorMsg = fmt.Sprintf("Search failed: %v", msg.err)
+		return m, nil
+	}
+
+	if m.focus == focusSearch {
+		m.searchInput, cmd = m.searchInput.Update(msg)
+		return m, cmd
+	}
+
+	return m, nil
+}
+
+// View renders the TUI interface
+func (m Model) View() string {
+	s := defaultStyles()
+
+	searchBox := m.renderSearchBox(s)
+	resultsBox := m.renderResultsBox(s)
+
+	return lipgloss.JoinVertical(lipgloss.Left, searchBox, resultsBox)
+}
+
+// renderSearchBox renders the search section of the UI
+func (m Model) renderSearchBox(s styles) string {
+	var searchBox string
+	if m.focus == focusSearch {
+		searchBox = s.focusedBox.Width(boxWidth).Render(
+			lipgloss.JoinVertical(lipgloss.Left,
+				s.focusedTitle.Render("Section 1: Search (Press 1, Enter to search, q to quit)"),
+				s.marginTop.Render(m.searchInput.View()),
+				s.yellowText.MarginTop(1).Render("Status: Press Enter to search"),
+			),
+		)
+	} else {
+		searchBox = s.unfocusedBox.Width(boxWidth).Render(
+			lipgloss.JoinVertical(lipgloss.Left,
+				s.unfocusedTitle.Render("Section 1: Search (Press 1)"),
+				s.marginTop.Render(m.searchInput.View()),
+			),
+		)
+	}
+	return searchBox
+}
+
+// renderResultsBox renders the results section of the UI
+func (m Model) renderResultsBox(s styles) string {
+	resultsContent := m.renderResultsContent(s)
+
+	var resultsBox string
+	if m.focus == focusResults {
+		resultsBox = s.focusedBox.Width(boxWidth).Render(
+			lipgloss.JoinVertical(lipgloss.Left,
+				s.focusedTitle.Render(fmt.Sprintf("Section 2: Results - %d videos (Press 2, q to quit)", len(m.results))),
+				s.marginTop.Render(resultsContent),
+			),
+		)
+	} else {
+		resultsBox = s.unfocusedBox.Width(boxWidth).Render(
+			lipgloss.JoinVertical(lipgloss.Left,
+				s.unfocusedTitle.Render(fmt.Sprintf("Section 2: Results - %d videos (Press 2)", len(m.results))),
+				s.marginTop.Render(resultsContent),
+			),
+		)
+	}
+	return resultsBox
+}
+
+// renderResultsContent renders the content inside the results box
+func (m Model) renderResultsContent(s styles) string {
+	if m.loading {
+		return s.warningText.Render("Searching... please wait")
+	}
+
+	if m.errorMsg != "" {
+		return s.errorText.Render(m.errorMsg)
+	}
+
+	if len(m.results) == 0 {
+		return s.grayText.Render("No results. Enter a search query above and press Enter")
+	}
+
+	return m.renderVideoList(s)
+}
+
+// renderVideoList renders the list of video results
+func (m Model) renderVideoList(s styles) string {
+	resultsLines := make([]string, 0, len(m.results))
+	for i, video := range m.results {
+		resultText := fmt.Sprintf("%d. %s\n   ID: %s | Uploader: %s",
+			i+1, video.Title, video.ID, video.Uploader)
+
+		var videoStyle lipgloss.Style
+		if i == 0 && m.focus == focusResults {
+			videoStyle = lipgloss.NewStyle().Foreground(s.green).Bold(true)
+		} else {
+			videoStyle = lipgloss.NewStyle().Foreground(s.white)
+		}
+		resultsLines = append(resultsLines, videoStyle.Render(resultText))
+	}
+	return lipgloss.JoinVertical(lipgloss.Left, resultsLines...)
+}
+
+// doSearch performs a YouTube search asynchronously
+func (m Model) doSearch(query string) tea.Cmd {
+	return func() tea.Msg {
+		results, err := client.SearchVideos(query)
+		if err != nil {
+			return searchErrMsg{err: err}
+		}
+		return searchDoneMsg{results: results}
+	}
+}
+
+// handleKeyRunes handles single-character key presses
+func (m *Model) handleKeyRunes(runes string) error {
+	switch runes {
+	case "1":
+		m.focus = focusSearch
+		m.searchInput.Focus()
+		m.errorMsg = ""
+	case "2":
+		m.focus = focusResults
+		m.searchInput.Blur()
+	case "q":
+		return fmt.Errorf("quit")
+	}
+	return nil
+}
+
+// handleEnterKey handles the Enter key press
+func (m *Model) handleEnterKey() tea.Cmd {
+	query := m.searchInput.Value()
+	if query == "" {
+		m.errorMsg = "Please enter a search query"
+		return nil
+	}
+	m.loading = true
+	m.errorMsg = ""
+	m.results = []models.Video{}
+	return m.doSearch(query)
+}
+
+// Run starts the TUI application
+func Run() error {
+	m := NewModel()
+	p := tea.NewProgram(m, tea.WithAltScreen())
+	_, err := p.Run()
+	return err
+}
+
+// styles holds LipGloss style definitions
+type styles struct {
+	cyan   lipgloss.Color
+	yellow lipgloss.Color
+	gray   lipgloss.Color
+	green  lipgloss.Color
+	red    lipgloss.Color
+	white  lipgloss.Color
+
+	focusedBox     lipgloss.Style
+	unfocusedBox   lipgloss.Style
+	focusedTitle   lipgloss.Style
+	unfocusedTitle lipgloss.Style
+	marginTop      lipgloss.Style
+	warningText    lipgloss.Style
+	errorText      lipgloss.Style
+	grayText       lipgloss.Style
+	yellowText     lipgloss.Style
+}
+
+// defaultStyles returns the default style definitions
+func defaultStyles() styles {
+	cyan := lipgloss.Color("36")
+	yellow := lipgloss.Color("226")
+	gray := lipgloss.Color("240")
+	green := lipgloss.Color("46")
+	red := lipgloss.Color("196")
+	white := lipgloss.Color("255")
+
+	return styles{
+		cyan:   cyan,
+		yellow: yellow,
+		gray:   gray,
+		green:  green,
+		red:    red,
+		white:  white,
+
+		focusedBox: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(cyan).
+			Padding(1).
+			MarginBottom(1),
+
+		unfocusedBox: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(gray).
+			Padding(1).
+			MarginBottom(1),
+
+		focusedTitle: lipgloss.NewStyle().Foreground(cyan).Bold(true),
+
+		unfocusedTitle: lipgloss.NewStyle().Foreground(gray),
+
+		marginTop: lipgloss.NewStyle().MarginTop(1),
+
+		warningText: lipgloss.NewStyle().Foreground(yellow),
+
+		errorText: lipgloss.NewStyle().Foreground(red),
+
+		grayText: lipgloss.NewStyle().Foreground(gray),
+
+		yellowText: lipgloss.NewStyle().Foreground(yellow),
+	}
+}

@@ -1,32 +1,46 @@
-// Package client provides YouTube API client functionality
+// Package client provides functionality for interacting with YouTube
+// through the yt-dlp command line tool.
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"os/exec"
+
 	"youtube-tui/internal/models"
-	"youtube-tui/pkg/utils"
 )
 
 const maxSearchResults = 5
 
+// executeCommand runs a command with the given arguments and returns stdout, stderr, and error
+func executeCommand(name string, args ...string) (string, string, error) {
+	var stdout, stderr bytes.Buffer
+
+	cmd := exec.Command(name, args...)
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	err := cmd.Run()
+	if err != nil {
+		return stdout.String(), stderr.String(), fmt.Errorf("command '%s' failed: %w", name, err)
+	}
+
+	return stdout.String(), stderr.String(), nil
+}
+
 // SearchVideos searches YouTube for videos matching the query using yt-dlp
-// It returns a list of up to 5 videos with Title, ID, and Uploader
+// It returns a list of up to five videos with Title, ID, and Uploader
 func SearchVideos(query string) ([]models.Video, error) {
 	if query == "" {
 		return nil, fmt.Errorf("search query cannot be empty")
 	}
 
-	// Construct yt-dlp command to search for 5 videos and dump JSON output
-	// Use --flat-playlist to get simpler JSON output without full metadata
-	// and --print to specify exactly what we need
-	searchTerm := fmt.Sprintf("ytsearch%d:%s", maxSearchResults, query)
-	stdout, stderr, err := utils.ExecuteCommand("yt-dlp", "--dump-single-json", "--flat-playlist", searchTerm)
+	stdout, stderr, err := executeCommand("yt-dlp", "--dump-single-json", "--flat-playlist", fmt.Sprintf("ytsearch%d:%s", maxSearchResults, query))
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute yt-dlp: %w\n%s", err, stderr)
 	}
 
-	// Parse the playlist JSON output
 	var playlist struct {
 		Entries []models.Video `json:"entries"`
 	}
@@ -35,7 +49,6 @@ func SearchVideos(query string) ([]models.Video, error) {
 		return nil, fmt.Errorf("failed to parse yt-dlp JSON output: %w", err)
 	}
 
-	// Limit results to maxSearchResults
 	if len(playlist.Entries) > maxSearchResults {
 		playlist.Entries = playlist.Entries[:maxSearchResults]
 	}

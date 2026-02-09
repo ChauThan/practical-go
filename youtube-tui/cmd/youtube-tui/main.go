@@ -1,35 +1,12 @@
-// main.go is the entry point for the YouTube TUI application
+// Command youtube-tui provides a terminal user interface for searching YouTube videos
 package main
 
 import (
-	"flag"
-	"fmt"
-	"log"
-
-	"youtube-tui/pkg/client"
+	"youtube-tui/internal/ui"
 )
 
 func main() {
-	query := flag.String("q", "", "Search query for YouTube videos")
-	flag.Parse()
-
-	if *query == "" {
-		fmt.Println("Usage: youtube-tui -q \"search query\"")
-		fmt.Println("Example: youtube-tui -q \"golang tutorial\"")
-		return
-	}
-
-	videos, err := client.SearchVideos(*query)
-	if err != nil {
-		log.Fatalf("Error searching videos: %v\n", err)
-	}
-
-	fmt.Printf("Found %d videos for: %s\n\n", len(videos), *query)
-	for i, video := range videos {
-		fmt.Printf("#%d\n", i+1)
-		fmt.Printf("Title:   %s\n", video.Title)
-		fmt.Printf("ID:      %s\n", video.ID)
-		fmt.Printf("Uploader: %s\n", video.Uploader)
-		fmt.Println()
+	if err := ui.Run(); err != nil {
+		panic(err)
 	}
 }
