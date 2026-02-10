@@ -1,3 +1,4 @@
 *.exe
 */_working
+*/_pending
 youtube-tui/bin/youtube-tui
