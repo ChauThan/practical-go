@@ -4,7 +4,10 @@ package ui
 
 import (
 	"fmt"
+	"io"
+	"strings"
 
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -26,6 +29,27 @@ const (
 	focusResults
 )
 
+// videoItem wraps a models.Video to implement list.Item
+type videoItem struct {
+	video models.Video
+	index int
+}
+
+// FilterValue returns the string used for filtering in the list
+func (v videoItem) FilterValue() string {
+	return v.video.Title
+}
+
+// Title returns the title to display in the list item
+func (v videoItem) Title() string {
+	return fmt.Sprintf("%d. %s", v.index+1, v.video.Title)
+}
+
+// Description returns the description for the list item
+func (v videoItem) Description() string {
+	return fmt.Sprintf("ID: %s | Uploader: %s", v.video.ID, v.video.Uploader)
+}
+
 // searchDoneMsg is sent when a search completes successfully
 type searchDoneMsg struct {
 	results []models.Video
@@ -41,6 +65,7 @@ type Model struct {
 	focus       focusSection
 	searchInput textinput.Model
 	results     []models.Video
+	resultsList list.Model
 	loading     bool
 	errorMsg    string
 }
@@ -53,10 +78,19 @@ func NewModel() Model {
 	ti.CharLimit = selectorLimit
 	ti.Width = selectorWidth
 
+	delegate := videoListDelegate{}
+	li := list.New([]list.Item{}, delegate, boxWidth-4, 0)
+	li.SetShowHelp(false)
+	li.SetShowFilter(false)
+	li.SetShowStatusBar(false)
+	li.SetFilteringEnabled(false)
+	li.DisableQuitKeybindings()
+
 	return Model{
 		focus:       focusSearch,
 		searchInput: ti,
 		results:     []models.Video{},
+		resultsList: li,
 		loading:     false,
 		errorMsg:    "",
 	}
@@ -94,16 +128,34 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.results = msg.results
 		m.focus = focusResults
 		m.searchInput.Blur()
+
+		items := make([]list.Item, len(msg.results))
+		for i, video := range msg.results {
+			items[i] = videoItem{video: video, index: i}
+		}
+		m.resultsList.SetItems(items)
+		m.resultsList.Select(0)
+
 		return m, nil
 
 	case searchErrMsg:
 		m.loading = false
 		m.errorMsg = fmt.Sprintf("Search failed: %v", msg.err)
 		return m, nil
+
+	case tea.WindowSizeMsg:
+		m.resultsList.SetHeight(msg.Height - 10)
+		m.resultsList.SetWidth(boxWidth - 4)
+		return m, nil
 	}
 
 	if m.focus == focusSearch {
 		m.searchInput, cmd = m.searchInput.Update(msg)
+		return m, cmd
+	}
+
+	if m.focus == focusResults {
+		m.resultsList, cmd = m.resultsList.Update(msg)
 		return m, cmd
 	}
 
@@ -179,7 +231,7 @@ func (m Model) renderResultsContent(s styles) string {
 		return s.grayText.Render("No results. Enter a search query above and press Enter")
 	}
 
-	return m.renderVideoList(s)
+	return m.resultsList.View()
 }
 
 // renderVideoList renders the list of video results
@@ -200,6 +252,52 @@ func (m Model) renderVideoList(s styles) string {
 	return lipgloss.JoinVertical(lipgloss.Left, resultsLines...)
 }
 
+// videoListDelegate implements list.ItemDelegate for styling video items
+type videoListDelegate struct{}
+
+// Height returns the height of each list item
+func (d videoListDelegate) Height() int {
+	return 2
+}
+
+// Spacing returns the spacing between items
+func (d videoListDelegate) Spacing() int {
+	return 1
+}
+
+// Update handles messages for an individual list item
+func (d videoListDelegate) Update(msg tea.Msg, m *list.Model) tea.Cmd {
+	return nil
+}
+
+// Render renders a single list item
+func (d videoListDelegate) Render(w io.Writer, m list.Model, index int, item list.Item) {
+	v, ok := item.(videoItem)
+	if !ok {
+		return
+	}
+
+	var (
+		style      lipgloss.Style
+		titleStyle lipgloss.Style
+		descStyle  lipgloss.Style
+	)
+
+	if index == m.Index() {
+		style = lipgloss.NewStyle().Border(lipgloss.NormalBorder(), true).MarginLeft(2)
+		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("46")).Bold(true)
+		descStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("255"))
+	} else {
+		style = lipgloss.NewStyle()
+		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("255"))
+		descStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+	}
+
+	fmt.Fprintf(w, "%s", style.Render(
+		fmt.Sprintf("%s\n%s", titleStyle.Render(v.Title()), descStyle.Render(v.Description())),
+	))
+}
+
 // doSearch performs a YouTube search asynchronously
 func (m Model) doSearch(query string) tea.Cmd {
 	return func() tea.Msg {
@@ -213,6 +311,12 @@ func (m Model) doSearch(query string) tea.Cmd {
 
 // handleKeyRunes handles single-character key presses
 func (m *Model) handleKeyRunes(runes string) error {
+	// "Typing wins": only treat '1', '2', 'q' as commands when search is not focused
+	// or the search input is empty, allowing normal text entry
+	if m.focus == focusSearch && m.searchInput.Value() != "" {
+		return nil
+	}
+
 	switch runes {
 	case "1":
 		m.focus = focusSearch
@@ -230,14 +334,14 @@ func (m *Model) handleKeyRunes(runes string) error {
 // handleEnterKey handles the Enter key press
 func (m *Model) handleEnterKey() tea.Cmd {
 	query := m.searchInput.Value()
-	if query == "" {
+	if query == "" || len(strings.TrimSpace(query)) == 0 {
 		m.errorMsg = "Please enter a search query"
 		return nil
 	}
 	m.loading = true
 	m.errorMsg = ""
 	m.results = []models.Video{}
-	return m.doSearch(query)
+	return m.doSearch(strings.TrimSpace(query))
 }
 
 // Run starts the TUI application

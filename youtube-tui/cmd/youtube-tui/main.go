@@ -2,11 +2,15 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"youtube-tui/internal/ui"
 )
 
 func main() {
 	if err := ui.Run(); err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
 }

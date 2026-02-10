@@ -11,7 +11,7 @@ import (
 	"youtube-tui/internal/models"
 )
 
-const maxSearchResults = 5
+const maxSearchResults = 25
 
 // executeCommand runs a command with the given arguments and returns stdout, stderr, and error
 func executeCommand(name string, args ...string) (string, string, error) {
@@ -51,10 +51,6 @@ func SearchVideos(query string) ([]models.Video, error) {
 
 	if len(playlist.Entries) > maxSearchResults {
 		playlist.Entries = playlist.Entries[:maxSearchResults]
-	}
-
-	if len(playlist.Entries) == 0 {
-		return nil, fmt.Errorf("no videos found for query: %s", query)
 	}
 
 	return playlist.Entries, nil
