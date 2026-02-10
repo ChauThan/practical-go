@@ -17,9 +17,13 @@ import (
 )
 
 const (
-	boxWidth      = 60
-	selectorWidth = 50
-	selectorLimit = 156
+	minBoxWidth     = 60
+	minTermWidth    = 80
+	minTermHeight   = 24
+	searchBoxHeight = 3
+	hMargin         = 2
+	vSectionGap     = 1
+	selectorLimit   = 156
 )
 
 type focusSection int
@@ -50,6 +54,63 @@ func (v videoItem) Description() string {
 	return fmt.Sprintf("ID: %s | Uploader: %s", v.video.ID, v.video.Uploader)
 }
 
+// recomputeLayout recalculates dimensions based on current window size.
+func (m *Model) recomputeLayout() {
+	if m.windowWidth == 0 || m.windowHeight == 0 {
+		return
+	}
+
+	// Determine if terminal is too small
+	m.tooSmall = m.windowWidth < minTermWidth || m.windowHeight < minTermHeight
+
+	// Calculate box width: min of terminal width minus margins and minBoxWidth,
+	// clamped to minBoxWidth if terminal is very small.
+	maxBoxWidth := m.windowWidth - 2*hMargin
+	if maxBoxWidth < minBoxWidth {
+		m.boxWidth = minBoxWidth
+	} else {
+		m.boxWidth = maxBoxWidth
+	}
+
+	// Search box always occupies exactly searchBoxHeight lines of CONTENT.
+	// Actual rendered height includes: borders(2) + padding(2) + bottomMargin(1)
+	// Total search height = searchBoxHeight + 5
+	// Results section takes the remaining height.
+	actualSearchBoxHeight := searchBoxHeight + 5 // borders + padding + margin
+	m.resultsListHeight = m.windowHeight - actualSearchBoxHeight - vSectionGap
+	if m.resultsListHeight < 1 {
+		m.resultsListHeight = 1
+	}
+
+	// Inner list content width/height for the list component
+	// Need to account for box borders and padding
+	// focusedBox/unfocusedBox use Padding(1) and RoundedBorder (1 char on each side)
+	innerWidth := m.boxWidth - 4 // 2 for borders, 2 for padding
+	if innerWidth < 1 {
+		innerWidth = 1
+	}
+
+	// Adjust results list height for box chrome inside results section:
+	// Results section reserves resultsListHeight lines for the entire box
+	// Actual inner space = resultsListHeight - borders(2) - padding(2) = resultsListHeight - 4
+	// But we also need space for title line + margin (2 lines)
+	innerListHeight := m.resultsListHeight - 6 // borders(2) + padding(2) + title+marginTop(2)
+	if innerListHeight < 1 {
+		innerListHeight = 1
+	}
+
+	// Apply sizing to the list
+	m.resultsList.SetSize(innerWidth, innerListHeight)
+
+	// Update search input width to fit inside box
+	inputWidth := innerWidth
+	if inputWidth > selectorLimit {
+		inputWidth = selectorLimit
+	}
+	m.searchInput.Width = inputWidth
+	m.searchInput.PlaceholderStyle = lipgloss.NewStyle().Width(inputWidth)
+}
+
 // searchDoneMsg is sent when a search completes successfully
 type searchDoneMsg struct {
 	results []models.Video
@@ -62,12 +123,17 @@ type searchErrMsg struct {
 
 // Model holds the state for the TUI application
 type Model struct {
-	focus       focusSection
-	searchInput textinput.Model
-	results     []models.Video
-	resultsList list.Model
-	loading     bool
-	errorMsg    string
+	focus             focusSection
+	searchInput       textinput.Model
+	results           []models.Video
+	resultsList       list.Model
+	loading           bool
+	errorMsg          string
+	windowWidth       int
+	windowHeight      int
+	boxWidth          int
+	resultsListHeight int
+	tooSmall          bool
 }
 
 // NewModel creates a new Model with default state
@@ -76,13 +142,14 @@ func NewModel() Model {
 	ti.Placeholder = "Enter search query..."
 	ti.Focus()
 	ti.CharLimit = selectorLimit
-	ti.Width = selectorWidth
+	ti.Width = minBoxWidth - 4
 
 	delegate := videoListDelegate{}
-	li := list.New([]list.Item{}, delegate, boxWidth-4, 0)
+	li := list.New([]list.Item{}, delegate, minBoxWidth-4, 0)
 	li.SetShowHelp(false)
 	li.SetShowFilter(false)
 	li.SetShowStatusBar(false)
+	li.SetShowPagination(true)
 	li.SetFilteringEnabled(false)
 	li.DisableQuitKeybindings()
 
@@ -111,12 +178,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyCtrlC, tea.KeyCtrlQ, tea.KeyEsc:
 			return m, tea.Quit
 		case tea.KeyRunes:
-			if err := m.handleKeyRunes(string(msg.Runes)); err != nil {
+			if err := handleKeyRunes(&m, string(msg.Runes)); err != nil {
 				return m, tea.Quit
 			}
 		case tea.KeyEnter:
 			if m.focus == focusSearch {
-				cmd = m.handleEnterKey()
+				cmd = handleEnterKey(&m)
 				if cmd != nil {
 					return m, cmd
 				}
@@ -135,6 +202,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.resultsList.SetItems(items)
 		m.resultsList.Select(0)
+		m.recomputeLayout()
 
 		return m, nil
 
@@ -144,8 +212,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.WindowSizeMsg:
-		m.resultsList.SetHeight(msg.Height - 10)
-		m.resultsList.SetWidth(boxWidth - 4)
+		m.windowWidth = msg.Width
+		m.windowHeight = msg.Height
+		m.recomputeLayout()
 		return m, nil
 	}
 
@@ -176,19 +245,33 @@ func (m Model) View() string {
 func (m Model) renderSearchBox(s styles) string {
 	var searchBox string
 	if m.focus == focusSearch {
-		searchBox = s.focusedBox.Width(boxWidth).Render(
-			lipgloss.JoinVertical(lipgloss.Left,
-				s.focusedTitle.Render("Section 1: Search (Press 1, Enter to search, q to quit)"),
-				s.marginTop.Render(m.searchInput.View()),
-				s.yellowText.MarginTop(1).Render("Status: Press Enter to search"),
-			),
+		var statusText string
+		if m.tooSmall {
+			statusText = s.yellowText.Render("Warning: Terminal too small (recommended: 80x24)")
+		} else {
+			statusText = s.yellowText.Render("Status: Press Enter to search")
+		}
+		
+		// Render minimal 3-line content: title, input, status
+		searchBox = s.focusedBox.Width(m.boxWidth).Render(
+			s.focusedTitle.Render("Section 1: Search (Press 1, Enter to search, q to quit)") +
+				s.marginTop.Render(m.searchInput.View()) +
+				s.marginTop.Render(statusText),
 		)
 	} else {
-		searchBox = s.unfocusedBox.Width(boxWidth).Render(
-			lipgloss.JoinVertical(lipgloss.Left,
-				s.unfocusedTitle.Render("Section 1: Search (Press 1)"),
-				s.marginTop.Render(m.searchInput.View()),
-			),
+		var statusText string
+		if m.tooSmall {
+			statusText = s.yellowText.Render("Warning: Terminal too small (recommended: 80x24)")
+		} else {
+			statusText = ""
+		}
+		statusLine := s.yellowText.Render(statusText)
+		
+		// Render minimal 3-line content: title, input, status (empty)
+		searchBox = s.unfocusedBox.Width(m.boxWidth).Render(
+			s.unfocusedTitle.Render("Section 1: Search (Press 1)") +
+				s.marginTop.Render(m.searchInput.View()) +
+				s.marginTop.Render(statusLine),
 		)
 	}
 	return searchBox
@@ -200,14 +283,14 @@ func (m Model) renderResultsBox(s styles) string {
 
 	var resultsBox string
 	if m.focus == focusResults {
-		resultsBox = s.focusedBox.Width(boxWidth).Render(
+		resultsBox = s.focusedBox.Width(m.boxWidth).Render(
 			lipgloss.JoinVertical(lipgloss.Left,
 				s.focusedTitle.Render(fmt.Sprintf("Section 2: Results - %d videos (Press 2, q to quit)", len(m.results))),
 				s.marginTop.Render(resultsContent),
 			),
 		)
 	} else {
-		resultsBox = s.unfocusedBox.Width(boxWidth).Render(
+		resultsBox = s.unfocusedBox.Width(m.boxWidth).Render(
 			lipgloss.JoinVertical(lipgloss.Left,
 				s.unfocusedTitle.Render(fmt.Sprintf("Section 2: Results - %d videos (Press 2)", len(m.results))),
 				s.marginTop.Render(resultsContent),
@@ -278,24 +361,29 @@ func (d videoListDelegate) Render(w io.Writer, m list.Model, index int, item lis
 	}
 
 	var (
-		style      lipgloss.Style
 		titleStyle lipgloss.Style
 		descStyle  lipgloss.Style
 	)
 
 	if index == m.Index() {
-		style = lipgloss.NewStyle().Border(lipgloss.NormalBorder(), true).MarginLeft(2)
-		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("46")).Bold(true)
-		descStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("255"))
+		// Selected item: green + bold, no border
+		titleStyle = lipgloss.NewStyle().
+			Foreground(defaultStyles().green).
+			Bold(true).
+			MaxWidth(m.Width())
+		descStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("255")).
+			MaxWidth(m.Width())
 	} else {
-		style = lipgloss.NewStyle()
-		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("255"))
-		descStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("240"))
+		titleStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("255")).
+			MaxWidth(m.Width())
+		descStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("240")).
+			MaxWidth(m.Width())
 	}
 
-	fmt.Fprintf(w, "%s", style.Render(
-		fmt.Sprintf("%s\n%s", titleStyle.Render(v.Title()), descStyle.Render(v.Description())),
-	))
+	fmt.Fprintf(w, "%s\n%s", titleStyle.Render(v.Title()), descStyle.Render(v.Description()))
 }
 
 // doSearch performs a YouTube search asynchronously
@@ -310,7 +398,7 @@ func (m Model) doSearch(query string) tea.Cmd {
 }
 
 // handleKeyRunes handles single-character key presses
-func (m *Model) handleKeyRunes(runes string) error {
+func handleKeyRunes(m *Model, runes string) error {
 	// "Typing wins": only treat '1', '2', 'q' as commands when search is not focused
 	// or the search input is empty, allowing normal text entry
 	if m.focus == focusSearch && m.searchInput.Value() != "" {
@@ -325,6 +413,7 @@ func (m *Model) handleKeyRunes(runes string) error {
 	case "2":
 		m.focus = focusResults
 		m.searchInput.Blur()
+		m.recomputeLayout()
 	case "q":
 		return fmt.Errorf("quit")
 	}
@@ -332,7 +421,7 @@ func (m *Model) handleKeyRunes(runes string) error {
 }
 
 // handleEnterKey handles the Enter key press
-func (m *Model) handleEnterKey() tea.Cmd {
+func handleEnterKey(m *Model) tea.Cmd {
 	query := m.searchInput.Value()
 	if query == "" || len(strings.TrimSpace(query)) == 0 {
 		m.errorMsg = "Please enter a search query"
