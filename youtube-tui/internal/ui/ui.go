@@ -99,6 +99,10 @@ func NewModel(player *player.Player) Model {
 
 // Init returns the initial command for the application
 func (m Model) Init() tea.Cmd {
+	// Force initial layout computation if window size is already set
+	if m.windowWidth > 0 && m.windowHeight > 0 {
+		RecomputeLayout(&m)
+	}
 	return nil
 }
 
@@ -271,4 +275,3 @@ func defaultStyles() styles {
 		yellowText: lipgloss.NewStyle().Foreground(yellow),
 	}
 }
-

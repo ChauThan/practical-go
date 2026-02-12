@@ -43,16 +43,14 @@ func NewStyleProvider() StyleProvider {
 		focusedBox: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(cyan).
-			Padding(1).
-			MarginBottom(1),
+			Padding(1),
 
 		unfocusedBox: lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(gray).
-			Padding(1).
-			MarginBottom(1),
+			Padding(1),
 
-		focusedTitle: lipgloss.NewStyle().Foreground(cyan).Bold(true),
+		focusedTitle: lipgloss.NewStyle().Foreground(white).Bold(true),
 
 		unfocusedTitle: lipgloss.NewStyle().Foreground(gray),
 
@@ -91,6 +89,11 @@ func (s StyleProvider) FocusedTitle() lipgloss.Style {
 // UnfocusedTitle returns the style for an unfocused section title.
 func (s StyleProvider) UnfocusedTitle() lipgloss.Style {
 	return s.unfocusedTitle
+}
+
+// TitleContainer returns the style for title containers (with bottom margin).
+func (s StyleProvider) TitleContainer() lipgloss.Style {
+	return lipgloss.NewStyle().MarginBottom(1)
 }
 
 // MarginTop returns a margin-top style.

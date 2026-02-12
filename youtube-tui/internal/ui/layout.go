@@ -8,6 +8,7 @@ const (
 	hMargin         = 2
 	vSectionGap     = 1
 	selectorLimit   = 156
+	titleHeight     = 1 // Height of title lines (outside boxes)
 )
 
 // Layout holds the computed layout dimensions for the TUI.
@@ -39,14 +40,26 @@ func RecomputeLayout(m *Model) {
 		m.boxWidth = maxBoxWidth
 	}
 
-	// Search box always occupies exactly searchBoxHeight lines of CONTENT.
-	// Actual rendered height includes: borders(2) + padding(2) + bottomMargin(1)
-	// Total search height = searchBoxHeight + 7
-	// Results section takes the remaining height.
-	actualSearchBoxHeight := searchBoxHeight + 7 // borders + padding + margin + content
-	m.resultsListHeight = m.windowHeight - actualSearchBoxHeight - vSectionGap
-	if m.resultsListHeight < 1 {
-		m.resultsListHeight = 1
+	// Layout with titles outside boxes:
+	// Search section: title(1) + titleMargin(1) + searchBoxHeight
+	// Search box is auto-sized from content: borders(2) + padding(2) + content(1) = 5
+	// Search section total: title(1) + titleMargin(1) + searchBox(5) = 7 lines
+	// Then add 1 line margin before results section in View()
+	// For a 24-line terminal: 7 + 1(margin) = 8, remaining for results section = 24 - 8 = 16 lines
+	// Results section in View() is: marginTop(1) + title(1) + titleMargin(1) + resultsBox(X)
+	// So: 1 + 1 + 1 + boxHeight = 16
+	// boxHeight = 16 - 3 = 13 lines
+	actualSearchSectionHeight := 7 // 1(title) + 1(titleMargin) + 5(search box)
+
+	// Calculate the actual box Height(X) to set:
+	// m.resultsListHeight = windowHeight - 7 (search section) - 1 (margin between)
+	// results section needs: marginTop(1) + title(1) + titleMargin(1) + boxHeight(X)
+	// boxHeight = m.resultsListHeight - 3 - 1 (reduce by 1 more to show title)
+	m.resultsListHeight = m.windowHeight - actualSearchSectionHeight - 1
+	m.resultsListHeight = m.resultsListHeight - 4 // subtract marginTop(1) + title(1) + titleMargin(1) + 1(reduction)
+
+	if m.resultsListHeight < 4 {
+		m.resultsListHeight = 4 // minimum box height: borders(2) + padding(2)
 	}
 
 	// Inner list content width/height for the list component
@@ -57,11 +70,10 @@ func RecomputeLayout(m *Model) {
 		innerWidth = 1
 	}
 
-	// Adjust results list height for box chrome inside results section:
-	// Results section reserves resultsListHeight lines for the entire box
-	// Actual inner space = resultsListHeight - borders(2) - padding(2) = resultsListHeight - 4
-	// But we also need space for title line + margin (2 lines)
-	innerListHeight := m.resultsListHeight - 6 // borders(2) + padding(2) + title+marginTop(2)
+	// Adjust results list height for box chrome:
+	// m.resultsListHeight is the total box height including borders(2) + padding(2) + content
+	// So inner list content height = resultsListHeight - borders(2) - padding(2) = resultsListHeight - 4
+	innerListHeight := m.resultsListHeight - 4 // 2(borders) + 2(padding)
 	if innerListHeight < 1 {
 		innerListHeight = 1
 	}
