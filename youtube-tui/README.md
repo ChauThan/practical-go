@@ -89,6 +89,12 @@ Customize the color scheme using ANSI color codes (0-255):
 | Variable | Default | Description |
 |----------|----------|-------------|
 | `YOUTUBE_TUI_LOG_LEVEL` | INFO | Logging level (DEBUG, INFO, WARN, ERROR) |
+| `YOUTUBE_TUI_LOG_FILE` | `$HOME/.youtube-tui/youtube-tui.log` | Path to log file |
+| `YOUTUBE_TUI_LOG_TO_CONSOLE` | false | Enable console logging (dev only) |
+| `YOUTUBE_TUI_LOG_FILE_MAX_SIZE` | 10 | Maximum log file size in MB |
+| `YOUTUBE_TUI_LOG_FILE_MAX_BACKUPS` | 3 | Number of old log files to keep |
+
+By default, logs are written to a file to avoid interfering with the TUI. For development, set `YOUTUBE_TUI_LOG_TO_CONSOLE=true` to see logs in the terminal.
 
 ### Example Configuration
 

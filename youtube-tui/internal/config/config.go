@@ -3,6 +3,8 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
 )
 
@@ -33,6 +35,12 @@ const (
 
 	// Search configuration keys
 	EnvSearchMaxResults = envPrefix + "SEARCH_MAX_RESULTS"
+
+	// Logging configuration keys
+	EnvLogFile           = envPrefix + "LOG_FILE"
+	EnvLogToConsole      = envPrefix + "LOG_TO_CONSOLE"
+	EnvLogFileMaxSize    = envPrefix + "LOG_FILE_MAX_SIZE"
+	EnvLogFileMaxBackups = envPrefix + "LOG_FILE_MAX_BACKUPS"
 )
 
 // Default configuration values
@@ -65,6 +73,12 @@ const (
 // Default search configuration
 const (
 	DefaultSearchMaxResults = 25
+)
+
+// Default logging configuration
+const (
+	DefaultLogFileMaxSize    = 10 // in MB
+	DefaultLogFileMaxBackups = 3
 )
 
 // Provider implements the ConfigProvider interface using environment variables.
@@ -231,4 +245,38 @@ func (p *Provider) GetPlayerAutoStop() bool {
 // GetSearchMaxResults returns the maximum number of search results.
 func (p *Provider) GetSearchMaxResults() int {
 	return p.GetIntWithDefault(EnvSearchMaxResults, DefaultSearchMaxResults)
+}
+
+// GetDefaultLogFile returns the default log file path based on the platform.
+func GetDefaultLogFile() string {
+	var basePath string
+	if runtime.GOOS == "windows" {
+		basePath = filepath.Join(os.Getenv("USERPROFILE"), ".youtube-tui")
+	} else {
+		basePath = filepath.Join(os.Getenv("HOME"), ".youtube-tui")
+	}
+	return filepath.Join(basePath, "youtube-tui.log")
+}
+
+// GetLogFile returns the log file path to use, or the default if not configured.
+func (p *Provider) GetLogFile() string {
+	if value := os.Getenv(EnvLogFile); value != "" {
+		return value
+	}
+	return GetDefaultLogFile()
+}
+
+// GetLogToConsole returns whether to log to console (dev mode).
+func (p *Provider) GetLogToConsole() bool {
+	return p.GetBoolWithDefault(EnvLogToConsole, false)
+}
+
+// GetLogFileMaxSize returns the maximum log file size in MB.
+func (p *Provider) GetLogFileMaxSize() int {
+	return p.GetIntWithDefault(EnvLogFileMaxSize, DefaultLogFileMaxSize)
+}
+
+// GetLogFileMaxBackups returns the number of old log files to keep.
+func (p *Provider) GetLogFileMaxBackups() int {
+	return p.GetIntWithDefault(EnvLogFileMaxBackups, DefaultLogFileMaxBackups)
 }
