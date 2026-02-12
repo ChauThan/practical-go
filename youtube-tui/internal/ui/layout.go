@@ -4,7 +4,7 @@ const (
 	minBoxWidth     = 60
 	minTermWidth    = 80
 	minTermHeight   = 24
-	searchBoxHeight = 3
+	searchBoxHeight = 2
 	hMargin         = 2
 	vSectionGap     = 1
 	selectorLimit   = 156
@@ -41,9 +41,9 @@ func RecomputeLayout(m *Model) {
 
 	// Search box always occupies exactly searchBoxHeight lines of CONTENT.
 	// Actual rendered height includes: borders(2) + padding(2) + bottomMargin(1)
-	// Total search height = searchBoxHeight + 5
+	// Total search height = searchBoxHeight + 7
 	// Results section takes the remaining height.
-	actualSearchBoxHeight := searchBoxHeight + 5 // borders + padding + margin
+	actualSearchBoxHeight := searchBoxHeight + 7 // borders + padding + margin + content
 	m.resultsListHeight = m.windowHeight - actualSearchBoxHeight - vSectionGap
 	if m.resultsListHeight < 1 {
 		m.resultsListHeight = 1

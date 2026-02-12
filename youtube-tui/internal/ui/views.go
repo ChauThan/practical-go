@@ -18,38 +18,37 @@ func (m Model) View() string {
 }
 
 // RenderSearchBox renders the search section of the UI.
-// It displays the search input field and status messages.
+// It displays the search input field and warnings if terminal is too small.
 func (m Model) RenderSearchBox(s StyleProvider) string {
 	var searchBox string
 	if m.focus == focusSearch {
-		var statusText string
+		// Render minimal 2-line content: title, input (plus warning if terminal too small)
 		if m.tooSmall {
-			statusText = s.YellowText().Render("Warning: Terminal too small (recommended: 80x24)")
+			searchBox = s.FocusedBox().Width(m.boxWidth).Render(
+				s.FocusedTitle().Render("Section 1: Search (Press 1, Enter to search, q to quit)") +
+					s.MarginTop().Render(m.searchInput.View()) +
+					s.MarginTop().Render(s.YellowText().Render("Warning: Terminal too small (recommended: 80x24)")),
+			)
 		} else {
-			statusText = s.YellowText().Render("Status: Press Enter to search")
+			searchBox = s.FocusedBox().Width(m.boxWidth).Render(
+				s.FocusedTitle().Render("Section 1: Search (Press 1, Enter to search, q to quit)") +
+					s.MarginTop().Render(m.searchInput.View()),
+			)
 		}
-
-		// Render minimal 3-line content: title, input, status
-		searchBox = s.FocusedBox().Width(m.boxWidth).Render(
-			s.FocusedTitle().Render("Section 1: Search (Press 1, Enter to search, q to quit)") +
-				s.MarginTop().Render(m.searchInput.View()) +
-				s.MarginTop().Render(statusText),
-		)
 	} else {
-		var statusText string
+		// Render minimal 2-line content: title, input (plus warning if terminal too small)
 		if m.tooSmall {
-			statusText = s.YellowText().Render("Warning: Terminal too small (recommended: 80x24)")
+			searchBox = s.UnfocusedBox().Width(m.boxWidth).Render(
+				s.UnfocusedTitle().Render("Section 1: Search (Press 1)") +
+					s.MarginTop().Render(m.searchInput.View()) +
+					s.MarginTop().Render(s.YellowText().Render("Warning: Terminal too small (recommended: 80x24)")),
+			)
 		} else {
-			statusText = ""
+			searchBox = s.UnfocusedBox().Width(m.boxWidth).Render(
+				s.UnfocusedTitle().Render("Section 1: Search (Press 1)") +
+					s.MarginTop().Render(m.searchInput.View()),
+			)
 		}
-		statusLine := s.YellowText().Render(statusText)
-
-		// Render minimal 3-line content: title, input, status (empty)
-		searchBox = s.UnfocusedBox().Width(m.boxWidth).Render(
-			s.UnfocusedTitle().Render("Section 1: Search (Press 1)") +
-				s.MarginTop().Render(m.searchInput.View()) +
-				s.MarginTop().Render(statusLine),
-		)
 	}
 	return searchBox
 }
@@ -61,14 +60,14 @@ func (m Model) RenderResultsBox(s StyleProvider) string {
 
 	var resultsBox string
 	if m.focus == focusResults {
-		resultsBox = s.FocusedBox().Width(m.boxWidth).Render(
+		resultsBox = s.FocusedBox().Width(m.boxWidth).Height(m.resultsListHeight).Render(
 			lipgloss.JoinVertical(lipgloss.Left,
 				s.FocusedTitle().Render(fmt.Sprintf("Section 2: Results - %d videos (Press 2, q to quit)", len(m.results))),
 				s.MarginTop().Render(resultsContent),
 			),
 		)
 	} else {
-		resultsBox = s.UnfocusedBox().Width(m.boxWidth).Render(
+		resultsBox = s.UnfocusedBox().Width(m.boxWidth).Height(m.resultsListHeight).Render(
 			lipgloss.JoinVertical(lipgloss.Left,
 				s.UnfocusedTitle().Render(fmt.Sprintf("Section 2: Results - %d videos (Press 2)", len(m.results))),
 				s.MarginTop().Render(resultsContent),
