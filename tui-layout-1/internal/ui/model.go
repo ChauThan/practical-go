@@ -20,6 +20,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = typed.Width
 		m.height = typed.Height
+	case tea.KeyMsg:
+		switch typed.String() {
+		case "q":
+			return m, tea.Quit
+		}
 	}
 
 	return m, nil
