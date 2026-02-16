@@ -6,7 +6,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-func renderSearchComponent(width int, focused bool) string {
+func renderSearchComponent(width int, focused bool, textInput string, inputFocused bool) string {
 	title := "Search Section (1)"
 	var titleStyle lipgloss.Style
 	if focused {
@@ -17,9 +17,7 @@ func renderSearchComponent(width int, focused bool) string {
 
 	lines := []string{
 		titledTopBorder(width, title, titleStyle),
-		innerTopLine(width),
-		innerContentLine(width, "Type to search..."),
-		innerBottomLine(width),
+		simpleContentLine(width, textInput),
 		bottomBorder(width),
 	}
 

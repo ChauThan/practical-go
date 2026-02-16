@@ -7,16 +7,17 @@ func (m Model) View() string {
 		return ""
 	}
 
-	searchHeight := 5
+	searchHeight := 3
 	helpHeight := 2
 	resultHeight := m.height - searchHeight - helpHeight
 	if resultHeight < 5 {
 		resultHeight = 5
 	}
 
-	search := renderSearchComponent(m.width, m.focusState == SearchFocused)
+	searchFocused := m.focusState == SearchFocused || m.focusState == InputFocused
+	search := renderSearchComponent(m.width, searchFocused, m.textInput.View(), m.focusState == InputFocused)
 	result := renderResultComponent(m.width, resultHeight, m.focusState == ResultFocused)
-	help := renderHelpBarComponent(m.width)
+	help := renderHelpBarComponent(m.width, m.focusState)
 
 	view := strings.Join([]string{search, result, help}, "\n")
 	return fitToHeight(view, m.height)

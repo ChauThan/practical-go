@@ -32,7 +32,7 @@ func TestUpdateKey2(t *testing.T) {
 }
 
 func TestRenderSearchComponent(t *testing.T) {
-	result := renderSearchComponent(40, true)
+	result := renderSearchComponent(40, true, "Type to search...", false)
 	if result == "" {
 		t.Error("Expected non-empty result from renderSearchComponent")
 	}

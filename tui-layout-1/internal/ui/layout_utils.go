@@ -63,6 +63,15 @@ func innerContentLine(width int, text string) string {
 	return "│ " + "│" + content + "│" + " │"
 }
 
+func simpleContentLine(width int, text string) string {
+	if width < 3 {
+		return truncateAndPad("│", width)
+	}
+	textWidth := width - 4
+	content := truncateAndPad(text, textWidth)
+	return "│  " + content + "  │"
+}
+
 func truncateAndPad(text string, width int) string {
 	if width <= 0 {
 		return ""
