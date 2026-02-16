@@ -14,8 +14,8 @@ func (m Model) View() string {
 		resultHeight = 5
 	}
 
-	search := renderSearchComponent(m.width)
-	result := renderResultComponent(m.width, resultHeight)
+	search := renderSearchComponent(m.width, m.focusState == SearchFocused)
+	result := renderResultComponent(m.width, resultHeight, m.focusState == ResultFocused)
 	help := renderHelpBarComponent(m.width)
 
 	view := strings.Join([]string{search, result, help}, "\n")

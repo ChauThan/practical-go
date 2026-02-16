@@ -1,10 +1,22 @@
 package ui
 
-import "strings"
+import (
+	"strings"
 
-func renderResultComponent(width int, height int) string {
+	"github.com/charmbracelet/lipgloss"
+)
+
+func renderResultComponent(width int, height int, focused bool) string {
 	if height < 5 {
 		height = 5
+	}
+
+	title := "Result Section (2)"
+	var titleStyle lipgloss.Style
+	if focused {
+		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("86")).Bold(true)
+	} else {
+		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
 	}
 
 	items := []string{
@@ -15,7 +27,7 @@ func renderResultComponent(width int, height int) string {
 	}
 
 	contentLines := make([]string, 0, height)
-	contentLines = append(contentLines, titledTopBorder(width, "Result Section"))
+	contentLines = append(contentLines, titledTopBorder(width, title, titleStyle))
 	contentLines = append(contentLines, innerTopLine(width))
 
 	innerRows := height - 4

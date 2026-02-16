@@ -1,8 +1,12 @@
 package ui
 
-import "strings"
+import (
+	"strings"
 
-func titledTopBorder(width int, title string) string {
+	"github.com/charmbracelet/lipgloss"
+)
+
+func titledTopBorder(width int, title string, style lipgloss.Style) string {
 	if width <= 1 {
 		return ""
 	}
@@ -13,14 +17,15 @@ func titledTopBorder(width int, title string) string {
 
 	innerWidth := width - 2
 	titleText := " " + title + " "
-	titleRunes := runeLen(titleText)
-	if titleRunes >= innerWidth {
+	styledTitle := style.Render(titleText)
+	titleWidth := lipgloss.Width(styledTitle)
+	if titleWidth >= innerWidth {
 		return "┌" + repeat("─", innerWidth) + "┐"
 	}
 
-	left := (innerWidth - titleRunes) / 2
-	right := innerWidth - titleRunes - left
-	return "┌" + repeat("─", left) + titleText + repeat("─", right) + "┐"
+	left := (innerWidth - titleWidth) / 2
+	right := innerWidth - titleWidth - left
+	return "┌" + repeat("─", left) + styledTitle + repeat("─", right) + "┐"
 }
 
 func bottomBorder(width int) string {

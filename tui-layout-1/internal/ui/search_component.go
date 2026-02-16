@@ -1,10 +1,22 @@
 package ui
 
-import "strings"
+import (
+	"strings"
 
-func renderSearchComponent(width int) string {
+	"github.com/charmbracelet/lipgloss"
+)
+
+func renderSearchComponent(width int, focused bool) string {
+	title := "Search Section (1)"
+	var titleStyle lipgloss.Style
+	if focused {
+		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("86")).Bold(true)
+	} else {
+		titleStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("241"))
+	}
+
 	lines := []string{
-		titledTopBorder(width, "Search Section"),
+		titledTopBorder(width, title, titleStyle),
 		innerTopLine(width),
 		innerContentLine(width, "Type to search..."),
 		innerBottomLine(width),
