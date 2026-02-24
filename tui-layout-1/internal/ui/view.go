@@ -16,7 +16,7 @@ func (m Model) View() string {
 
 	searchFocused := m.focusState == SearchFocused || m.focusState == InputFocused
 	search := renderSearchComponent(m.width, searchFocused, m.textInput.View(), m.focusState == InputFocused)
-	result := renderResultComponent(m.width, resultHeight, m.focusState == ResultFocused)
+	result := renderResultComponent(m.width, resultHeight, m.focusState == ResultFocused, m.resultItems, m.scrollOffset, m.selectedIdx)
 	help := renderHelpBarComponent(m.width, m.focusState)
 
 	view := strings.Join([]string{search, result, help}, "\n")

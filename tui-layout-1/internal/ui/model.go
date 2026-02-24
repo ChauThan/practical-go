@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -13,10 +15,14 @@ const (
 )
 
 type Model struct {
-	width      int
-	height     int
-	focusState FocusState
-	textInput  TextInput
+	width        int
+	height       int
+	focusState   FocusState
+	textInput    TextInput
+	resultItems  []string
+	scrollOffset int
+	selectedIdx  int
+	visibleCount int
 }
 
 type TextInput struct {
@@ -107,12 +113,21 @@ func (t TextInput) View() string {
 	return display
 }
 
+func mockResultItems() []string {
+	items := make([]string, 30)
+	for i := range items {
+		items[i] = fmt.Sprintf("• Result item %d", i+1)
+	}
+	return items
+}
+
 func NewModel() Model {
 	ti := NewTextInput("Type to search...")
 
 	return Model{
-		focusState: SearchFocused,
-		textInput:  ti,
+		focusState:  SearchFocused,
+		textInput:   ti,
+		resultItems: mockResultItems(),
 	}
 }
 
@@ -127,8 +142,40 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width = typed.Width
 		m.height = typed.Height
+		// title line takes 1 row; search=3, help=2
+		resultHeight := m.height - 3 - 2
+		if resultHeight < 1 {
+			resultHeight = 1
+		}
+		m.visibleCount = resultHeight - 1
+		if m.visibleCount < 1 {
+			m.visibleCount = 1
+		}
 	case tea.KeyMsg:
 		// Handle special keys before passing to text input
+		// Arrow navigation in result section
+		if m.focusState == ResultFocused {
+			total := len(m.resultItems)
+			switch typed.Type {
+			case tea.KeyUp:
+				if m.selectedIdx > 0 {
+					m.selectedIdx--
+				}
+				if m.selectedIdx < m.scrollOffset {
+					m.scrollOffset = m.selectedIdx
+				}
+				return m, nil
+			case tea.KeyDown:
+				if m.selectedIdx < total-1 {
+					m.selectedIdx++
+				}
+				if m.visibleCount > 0 && m.selectedIdx >= m.scrollOffset+m.visibleCount {
+					m.scrollOffset = m.selectedIdx - m.visibleCount + 1
+				}
+				return m, nil
+			}
+		}
+
 		switch typed.String() {
 		case "q":
 			if m.focusState == InputFocused {
