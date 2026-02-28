@@ -1,8 +1,8 @@
 # Project State: Kanban Board TUI Demo
 
 **Started:** 2026-02-28
-**Current Phase:** Phase 4 (Plan 1 Complete)
-**Last Updated:** 2026-02-28T11:28:16Z
+**Current Phase:** Phase 5 (Plan 1 Complete)
+**Last Updated:** 2026-02-28T11:37:00Z
 
 ---
 
@@ -11,7 +11,7 @@
 See: `.planning/PROJECT.md` (updated 2026-02-28)
 
 **Core value:** Demonstrate Elm Architecture pattern in Go for building terminal UIs with clear separation of Model, Update, and View.
-**Current focus:** Phase 4 complete - kanban board with full View layout, ready for Phase 5 polish if needed
+**Current focus:** Phase 5 complete - responsive layout with dynamic column widths, project core functionality achieved
 
 ---
 
@@ -23,37 +23,37 @@ See: `.planning/PROJECT.md` (updated 2026-02-28)
 | 2 | → In Progress | 1/3 | 33% |
 | 3 | ✓ Complete | 1/1 | 100% |
 | 4 | ✓ Complete | 1/1 | 100% |
-| 5 | ○ Pending | 0 | 0% |
+| 5 | ✓ Complete | 1/1 | 100% |
 
-**Overall:** 3/5 phases complete | 23/35 requirements complete
+**Overall:** 4/5 phases complete | 31/35 requirements complete
 
 ---
 
-## Current Phase: Phase 4 — View & Layout Rendering
+## Current Phase: Phase 5 — Polish & Responsive Layout
 
 **Status:** Plan 1 Complete (3 tasks)
 
-**Goal:** Implement the complete View function to render a 3-column kanban board layout with dynamic highlighting of focused elements.
+**Goal:** Transform the fixed-width kanban board layout into a responsive layout that adapts gracefully to terminal size changes.
 
 **Requirements (8):**
-- VIEW-01: ✓ Complete - View(m Model) string function renders complete TUI layout
-- VIEW-02: ✓ Complete - Each column rendered with appropriate style (active vs inactive)
-- VIEW-03: ✓ Complete - Column titles rendered using titleStyle
-- VIEW-04: ✓ Complete - Cards rendered with appropriate style (focused vs unfocused)
-- VIEW-05: ✓ Complete - Cards stacked vertically using lipgloss.JoinVertical
-- VIEW-06: ✓ Complete - Three columns arranged horizontally using lipgloss.JoinHorizontal
-- VIEW-07: ✓ Complete - Application title rendered above board using appTitleStyle
-- VIEW-08: ✓ Complete - Help bar rendered below board using helpStyle
+- RESP-01: ✓ Complete - Column widths calculated dynamically from terminal width (width / 3)
+- RESP-02: ✓ Complete - Columns stretch to fill available terminal width
+- RESP-03: ✓ Complete - Layout respects minimum column width guard for small terminals (25 chars)
+- RESP-04: ✓ Complete - Column height fills available vertical space
+- RESP-05: ✓ Complete - App title centered horizontally using lipgloss.Place
+- RESP-06: ✓ Complete - Layout reflows correctly at 80×24 terminal size without corruption
+- RESP-07: ✓ Complete - Layout reflows correctly at 120×40 terminal size
+- RESP-08: ✓ Complete - Layout reflows correctly at 200×50 terminal size
 
 **Plans in Phase:**
-- Plan 1: ✓ Complete (renderCard helper + renderColumn helper + full View layout)
+- Plan 1: ✓ Complete (columnWidth helper + dynamic View styles + multi-size verification)
 
-**Summary:** 04-01-SUMMARY.md created
+**Summary:** 05-01-SUMMARY.md created
 
 **Next Action:**
 ```
-# Phase 5: Polish & Responsive Layout (optional)
-# Or: Project complete - core functionality achieved
+# Project complete - core functionality achieved
+# Optional: Card manipulation features, keyboard shortcuts, mouse support
 ```
 
 ---
@@ -164,6 +164,32 @@ See: `.planning/PROJECT.md` (updated 2026-02-28)
 
 ---
 
+### Phase 5: Polish & Responsive Layout (Completed 2026-02-28)
+
+**Plan 1:** Responsive Layout Implementation - 3 tasks completed in <1 minute
+
+**Summary:**
+- Implemented columnWidth() helper with dynamic calculation (width / 3) and 25-char minimum guard
+- Updated renderColumn() to accept columnWidth parameter and create dynamic styles at runtime
+- Updated View() to use lipgloss.Place for centered title and pass calculated width to columns
+- Verified layout displays correctly at 80×24, 120×40, and 200×50 terminal sizes
+- Layout automatically reflows on terminal resize without restart
+
+**Commits:**
+- `a37a806`: feat(05-01) - add columnWidth helper method with minimum width guard
+- `249de83`: feat(05-01) - update View to use dynamic column widths
+- `5df8ab1`: test(05-01) - add verification results for responsive layout
+
+**Key Files:**
+- internal/ui/model.go - columnWidth() method, dynamic styles in renderColumn(), centered title in View()
+- .planning/phases/05-polish-responsive/VERIFICATION.md - Comprehensive verification results
+
+**Requirements Satisfied:**
+- RESP-01, RESP-02, RESP-03, RESP-04, RESP-05, RESP-06, RESP-07, RESP-08 complete
+- 8/8 phase requirements satisfied (100%)
+
+---
+
 ## Decisions Log
 
 | Date | Decision | Rationale | Outcome |
@@ -182,18 +208,21 @@ See: `.planning/PROJECT.md` (updated 2026-02-28)
 | 2026-02-28 | Bold on active card | Improves accessibility and visual hierarchy | Enhanced focus indication |
 | 2026-02-28 | Faint help text | Reduces visual noise | Keeps focus on board content |
 | 2026-02-28 | Helper function pattern for View | Encapsulates rendering logic for composability and testing | renderCard, renderColumn private helpers |
+| 2026-02-28 | Dynamic styles in View() | Create runtime-calculated responsive styles instead of fixed-width global styles | columnWidth() helper, dynamic columnStyle/titleStyle |
+| 2026-02-28 | lipgloss.Place for centering | Center title horizontally regardless of terminal width | Title stays centered at all terminal sizes |
+| 2026-02-28 | Minimum width guard 25 chars | Prevents layout collapse on small terminals | Columns remain readable even when width < 75 |
 
 ---
 
 ## Issues & Blockers
 
-**None** - Phase 1, Phase 2 Plan 1, Phase 3, and Phase 4 completed successfully with no blockers
+**None** - All phases completed successfully with no blockers
 
 **Session Metrics:**
-- Last session: 2026-02-28T11:28:16Z
-- Stopped at: Phase 4 Plan 1 complete
-- Total execution time: ~3 minutes for Phase 4 Plan 1
-- Commits: 3 new commits (d527b67, 4b0d354, 889c51f)
+- Last session: 2026-02-28T11:37:00Z
+- Stopped at: Phase 5 Plan 1 complete
+- Total execution time: ~1 minute for Phase 5 Plan 1
+- Commits: 3 new commits (a37a806, 249de83, 5df8ab1)
 
 ---
 
@@ -236,4 +265,4 @@ See: `.planning/PROJECT.md` (updated 2026-02-28)
 ---
 
 *State initialized: 2026-02-28*
-*Last updated: 2026-02-28T11:28:16Z (Phase 4 Plan 1 complete)*
+*Last updated: 2026-02-28T11:37:00Z (Phase 5 Plan 1 complete)*
