@@ -73,10 +73,26 @@ func renderCard(card domain.Card, cardIdx int, colIdx int, focusedCol int, focus
 	return CardStyle.Render(card.Title)
 }
 
-// renderColumn renders a single column with title and cards
-func renderColumn(col domain.Column, colIdx int, focusedCol int, focusedCard int) string {
+// renderColumn renders a single column with title and cards using dynamic width
+func renderColumn(col domain.Column, colIdx int, focusedCol int, focusedCard int, columnWidth int) string {
+	// Create dynamic column style based on width
+	columnStyle := lipgloss.NewStyle().
+		Border(lipgloss.NormalBorder()).
+		BorderForeground(lipgloss.Color(inactiveBorderColor)).
+		Padding(0, 1).
+		Width(columnWidth)
+
+	activeColumnStyle := columnStyle.Copy().
+		BorderForeground(lipgloss.Color(activeColumnColor))
+
+	// Create dynamic title style for proper centering
+	titleStyle := lipgloss.NewStyle().
+		Bold(true).
+		Align(lipgloss.Center).
+		Width(columnWidth)
+
 	// Render column title
-	title := TitleStyle.Render(col.Title)
+	title := titleStyle.Render(col.Title)
 
 	// Render all cards in this column
 	var cardStrings []string
@@ -92,9 +108,9 @@ func renderColumn(col domain.Column, colIdx int, focusedCol int, focusedCard int
 
 	// Apply appropriate column style
 	if colIdx == focusedCol {
-		return ActiveColumnStyle.Render(columnContent)
+		return activeColumnStyle.Render(columnContent)
 	}
-	return ColumnStyle.Render(columnContent)
+	return columnStyle.Render(columnContent)
 }
 
 // Init returns the initial command
@@ -158,13 +174,20 @@ func (m Model) View() tea.View {
 	if !m.ready {
 		content = "Initializing..."
 	} else {
-		// Render application title
-		title := AppTitleStyle.Render("KANBAN BOARD")
+		// Render application title centered horizontally
+		title := lipgloss.Place(
+			m.width, 3,
+			lipgloss.Center, lipgloss.Center,
+			lipgloss.NewStyle().Bold(true).Render("KANBAN BOARD"),
+		)
+
+		// Calculate dynamic column width
+		columnWidth := m.columnWidth()
 
 		// Render all columns
 		var columnStrings []string
 		for colIdx, col := range m.columns {
-			columnStrings = append(columnStrings, renderColumn(col, colIdx, m.focusedCol, m.focusedCard))
+			columnStrings = append(columnStrings, renderColumn(col, colIdx, m.focusedCol, m.focusedCard, columnWidth))
 		}
 
 		// Arrange columns horizontally
