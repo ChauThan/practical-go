@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	tea "charm.land/bubbletea/v2"
 	"tui-layout-2/internal/domain"
 
@@ -147,19 +146,23 @@ func (m Model) View() tea.View {
 	if !m.ready {
 		content = "Initializing..."
 	} else {
-		// Debug output to verify navigation works
-		focusedCol := "To Do"
-		focusedCard := "None"
-		if len(m.columns) > 0 && m.focusedCol < len(m.columns) {
-			focusedCol = m.columns[m.focusedCol].Title
-			if len(m.columns[m.focusedCol].Cards) > 0 && m.focusedCard < len(m.columns[m.focusedCol].Cards) {
-				focusedCard = m.columns[m.focusedCol].Cards[m.focusedCard].Title
-			}
+		// Render application title
+		title := AppTitleStyle.Render("KANBAN BOARD")
+
+		// Render all columns
+		var columnStrings []string
+		for colIdx, col := range m.columns {
+			columnStrings = append(columnStrings, renderColumn(col, colIdx, m.focusedCol, m.focusedCard))
 		}
-		content = fmt.Sprintf(
-			"Focused Column: %s (index %d)\nFocused Card: %s (index %d)\n\nUse arrow keys or hjkl to navigate. Press 'q' to quit.",
-			focusedCol, m.focusedCol, focusedCard, m.focusedCard,
-		)
+
+		// Arrange columns horizontally
+		board := lipgloss.JoinHorizontal(lipgloss.Top, columnStrings...)
+
+		// Render help bar
+		help := HelpStyle.Render("←/→: Move column | ↑/↓: Move card | q: Quit")
+
+		// Combine all sections vertically
+		content = lipgloss.JoinVertical(lipgloss.Left, title, board, help)
 	}
 	return tea.NewView(content)
 }
