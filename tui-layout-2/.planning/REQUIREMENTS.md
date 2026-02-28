@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Project Setup
 
-- [ ] **PROJ-01**: Go module initialized with name `tui-layout-2`
-- [ ] **PROJ-02**: bubbletea and lipgloss dependencies installed and available
-- [ ] **PROJ-03**: Stub files created (main.go, model.go, view.go, styles.go)
-- [ ] **PROJ-04**: Minimal bubbletea app runs and exits cleanly on 'q' key
+- [x] **PROJ-01**: Go module initialized with name `tui-layout-2`
+- [x] **PROJ-02**: bubbletea and lipgloss dependencies installed and available
+- [x] **PROJ-03**: Stub files created (main.go, model.go, view.go, styles.go)
+- [x] **PROJ-04**: Minimal bubbletea app runs and exits cleanly on 'q' key
 
 ### Model & State
 
@@ -84,10 +84,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PROJ-01 | Phase 1 | Pending |
-| PROJ-02 | Phase 1 | Pending |
-| PROJ-03 | Phase 1 | Pending |
-| PROJ-04 | Phase 1 | Pending |
+| PROJ-01 | Phase 1 | ✅ Complete |
+| PROJ-02 | Phase 1 | ✅ Complete |
+| PROJ-03 | Phase 1 | ✅ Complete |
+| PROJ-04 | Phase 1 | ✅ Complete |
 | MODEL-01 | Phase 2 | Pending |
 | MODEL-02 | Phase 2 | Pending |
 | MODEL-03 | Phase 2 | Pending |
@@ -124,6 +124,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 **Coverage:**
 - v1 requirements: 35 total
 - Mapped to phases: 35
+- Complete: 4 (PROJ-01 through PROJ-04)
 - Unmapped: 0 ✓
 
 ---
