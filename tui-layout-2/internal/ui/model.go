@@ -4,6 +4,8 @@ import (
 	"fmt"
 	tea "charm.land/bubbletea/v2"
 	"tui-layout-2/internal/domain"
+
+	"charm.land/lipgloss/v2"
 )
 
 // Model holds the application state
@@ -49,6 +51,15 @@ func NewModel() Model {
 		height:      24,
 		ready:       false,
 	}
+}
+
+// renderCard renders a single card with appropriate styling based on focus state
+func renderCard(card domain.Card, cardIdx int, colIdx int, focusedCol int, focusedCard int) string {
+	// Check if this card is focused
+	if colIdx == focusedCol && cardIdx == focusedCard {
+		return ActiveCardStyle.Render(card.Title)
+	}
+	return CardStyle.Render(card.Title)
 }
 
 // Init returns the initial command
