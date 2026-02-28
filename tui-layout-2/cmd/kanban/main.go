@@ -8,9 +8,8 @@ import (
 )
 
 func main() {
-	// Create initial model
-	// Note: Model fields will be initialized in Phase 2
-	var model ui.Model
+	// Create initial model with mock data
+	model := ui.NewModel()
 
 	// Create and run the program
 	p := tea.NewProgram(model)

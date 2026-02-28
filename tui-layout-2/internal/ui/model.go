@@ -15,6 +15,41 @@ type Model struct {
 	ready      bool
 }
 
+// NewModel creates and initializes a new Model with mock kanban data
+func NewModel() Model {
+	return Model{
+		columns: []domain.Column{
+			{
+				Title: "To Do",
+				Cards: []domain.Card{
+					{Title: "Fix login bug"},
+					{Title: "Write unit tests"},
+					{Title: "Update README"},
+				},
+			},
+			{
+				Title: "In Progress",
+				Cards: []domain.Card{
+					{Title: "Refactor auth module"},
+					{Title: "Code review PR #42"},
+				},
+			},
+			{
+				Title: "Done",
+				Cards: []domain.Card{
+					{Title: "Setup CI pipeline"},
+					{Title: "Deploy v1.0"},
+				},
+			},
+		},
+		focusedCol:  0,
+		focusedCard: 0,
+		width:       80,
+		height:      24,
+		ready:       false,
+	}
+}
+
 // Init returns the initial command
 func (m Model) Init() tea.Cmd {
 	return nil
