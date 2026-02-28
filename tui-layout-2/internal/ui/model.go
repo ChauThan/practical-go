@@ -62,6 +62,30 @@ func renderCard(card domain.Card, cardIdx int, colIdx int, focusedCol int, focus
 	return CardStyle.Render(card.Title)
 }
 
+// renderColumn renders a single column with title and cards
+func renderColumn(col domain.Column, colIdx int, focusedCol int, focusedCard int) string {
+	// Render column title
+	title := TitleStyle.Render(col.Title)
+
+	// Render all cards in this column
+	var cardStrings []string
+	for cardIdx, card := range col.Cards {
+		cardStrings = append(cardStrings, renderCard(card, cardIdx, colIdx, focusedCol, focusedCard))
+	}
+
+	// Stack cards vertically
+	cards := lipgloss.JoinVertical(lipgloss.Left, cardStrings...)
+
+	// Combine title and cards
+	columnContent := lipgloss.JoinVertical(lipgloss.Left, title, cards)
+
+	// Apply appropriate column style
+	if colIdx == focusedCol {
+		return ActiveColumnStyle.Render(columnContent)
+	}
+	return ColumnStyle.Render(columnContent)
+}
+
 // Init returns the initial command
 func (m Model) Init() tea.Cmd {
 	return nil
