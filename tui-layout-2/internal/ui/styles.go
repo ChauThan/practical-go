@@ -23,4 +23,13 @@ var (
 		Border(lipgloss.NormalBorder()).
 		BorderForeground(lipgloss.Color(inactiveBorderColor)).
 		Padding(0)
+
+	// activeColumnStyle highlights focused column with purple border
+	activeColumnStyle = columnStyle.Copy().
+		BorderForeground(lipgloss.Color(activeColumnColor))
+
+	// activeCardStyle highlights focused card with amber border and bold text
+	activeCardStyle = cardStyle.Copy().
+		BorderForeground(lipgloss.Color(activeCardColor)).
+		Bold(true)
 )
