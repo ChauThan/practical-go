@@ -115,20 +115,28 @@ This roadmap transforms the PRD's 5-phase plan into executable phases with clear
 **Requirements:**
 - VIEW-01 through VIEW-08
 
+**Status:** ✅ Complete (2026-02-28)
+
+**Plans:**
+- Plan 1: ✓ Complete (renderCard helper + renderColumn helper + full View layout)
+
+**Progress:** 8/8 requirements satisfied (VIEW-01, VIEW-02, VIEW-03, VIEW-04, VIEW-05, VIEW-06, VIEW-07, VIEW-08)
+
 **Success Criteria:**
-1. `go run .` renders a 3-column kanban layout in terminal
-2. Active column has distinct border color (visual focus indicator)
-3. Active card has distinct border color (visual selection indicator)
-4. All 3 columns render side-by-side filling terminal width
-5. Cards stack vertically within columns
-6. Application title appears above board
-7. Help bar appears below board with navigation hints
-8. Keyboard navigation updates visual highlighting in real-time
+1. ✓ `go run .` renders a 3-column kanban layout in terminal
+2. ✓ Active column has distinct border color (visual focus indicator)
+3. ✓ Active card has distinct border color (visual selection indicator)
+4. ✓ All 3 columns render side-by-side filling terminal width
+5. ✓ Cards stack vertically within columns
+6. ✓ Application title appears above board
+7. ✓ Help bar appears below board with navigation hints
+8. ✓ Keyboard navigation updates visual highlighting in real-time
 
 **Outcomes:**
-- Fully functional visual TUI interface
-- Complete Elm Architecture implementation (Model, Update, View)
-- Interactive kanban board demonstration
+- ✓ Fully functional visual TUI interface
+- ✓ Complete Elm Architecture implementation (Model, Update, View)
+- ✓ Interactive kanban board demonstration
+- ✓ Real-time visual feedback for keyboard navigation
 
 ---
 
@@ -163,10 +171,10 @@ This roadmap transforms the PRD's 5-phase plan into executable phases with clear
 | 1 | Project Scaffold | ✅ Complete | 4/4 | 5/5 |
 | 2 | Model & State | → In Progress | 4/9 | 4/6 |
 | 3 | Visual Styles | ✅ Complete | 7/7 | 7/7 |
-| 4 | View & Layout | ○ Pending | 0/8 | 0/8 |
+| 4 | View & Layout | ✅ Complete | 8/8 | 8/8 |
 | 5 | Polish & Responsive | ○ Pending | 0/8 | 0/8 |
 
-**Total:** 15/35 requirements complete | 16/34 success criteria passed
+**Total:** 23/35 requirements complete | 24/34 success criteria passed
 
 ---
 
@@ -199,4 +207,4 @@ This roadmap transforms the PRD's 5-phase plan into executable phases with clear
 
 ---
 *Roadmap created: 2026-02-28*
-*Last updated: 2026-02-28 (Phase 3 marked complete)*
+*Last updated: 2026-02-28 (Phase 4 marked complete)*
