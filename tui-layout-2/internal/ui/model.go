@@ -52,6 +52,18 @@ func NewModel() Model {
 	}
 }
 
+// columnWidth calculates responsive column width with minimum width guard
+func (m Model) columnWidth() int {
+	if m.width == 0 {
+		return 25 // Default for uninitialized state
+	}
+	columnWidth := m.width / 3
+	if columnWidth < 25 {
+		return 25 // Minimum width guard
+	}
+	return columnWidth
+}
+
 // renderCard renders a single card with appropriate styling based on focus state
 func renderCard(card domain.Card, cardIdx int, colIdx int, focusedCol int, focusedCard int) string {
 	// Check if this card is focused
