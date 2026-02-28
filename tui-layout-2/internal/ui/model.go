@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	tea "charm.land/bubbletea/v2"
 	"tui-layout-2/internal/domain"
 )
@@ -111,7 +112,19 @@ func (m Model) View() tea.View {
 	if !m.ready {
 		content = "Initializing..."
 	} else {
-		content = "Press 'q' to quit.\n"
+		// Debug output to verify navigation works
+		focusedCol := "To Do"
+		focusedCard := "None"
+		if len(m.columns) > 0 && m.focusedCol < len(m.columns) {
+			focusedCol = m.columns[m.focusedCol].Title
+			if len(m.columns[m.focusedCol].Cards) > 0 && m.focusedCard < len(m.columns[m.focusedCol].Cards) {
+				focusedCard = m.columns[m.focusedCol].Cards[m.focusedCard].Title
+			}
+		}
+		content = fmt.Sprintf(
+			"Focused Column: %s (index %d)\nFocused Card: %s (index %d)\n\nUse arrow keys or hjkl to navigate. Press 'q' to quit.",
+			focusedCol, m.focusedCol, focusedCard, m.focusedCard,
+		)
 	}
 	return tea.NewView(content)
 }
