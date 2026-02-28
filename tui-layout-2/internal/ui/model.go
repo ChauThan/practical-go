@@ -62,6 +62,40 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
+		case "left", "h":
+			if m.focusedCol > 0 {
+				m.focusedCol--
+				m.focusedCard = 0 // Reset to top card when changing columns
+			}
+		case "right", "l":
+			if m.focusedCol < len(m.columns)-1 {
+				m.focusedCol++
+				m.focusedCard = 0 // Reset to top card when changing columns
+			}
+		case "up", "k":
+			// Guard against empty columns
+			if len(m.columns) == 0 {
+				return m, nil
+			}
+			currentCol := m.columns[m.focusedCol]
+			if len(currentCol.Cards) == 0 {
+				return m, nil
+			}
+			if m.focusedCard > 0 {
+				m.focusedCard--
+			}
+		case "down", "j":
+			// Guard against empty columns
+			if len(m.columns) == 0 {
+				return m, nil
+			}
+			currentCol := m.columns[m.focusedCol]
+			if len(currentCol.Cards) == 0 {
+				return m, nil
+			}
+			if m.focusedCard < len(currentCol.Cards)-1 {
+				m.focusedCard++
+			}
 		}
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
