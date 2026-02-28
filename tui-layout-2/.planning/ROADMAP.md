@@ -57,6 +57,14 @@ This roadmap transforms the PRD's 5-phase plan into executable phases with clear
 2. ✓ Left/right arrow keys change focused column (no out-of-bounds crashes)
 3. ✓ Up/down arrow keys change focused card within column (no out-of-bounds crashes)
 4. ✓ 'q' and ctrl+c keys quit the application
+5. ⏳ Terminal resize updates Model's width and height fields
+6. ✓ Mock data displays 3 columns: "To Do", "In Progress", "Done" with tasks
+
+**Success Criteria:**
+1. ✓ Card, Column, and Model structs compile without errors
+2. ✓ Left/right arrow keys change focused column (no out-of-bounds crashes)
+3. ✓ Up/down arrow keys change focused card within column (no out-of-bounds crashes)
+4. ✓ 'q' and ctrl+c keys quit the application
 5. ✓ Terminal resize updates Model's width and height fields
 6. ✓ Mock data displays 3 columns: "To Do", "In Progress", "Done" with tasks
 
@@ -75,19 +83,28 @@ This roadmap transforms the PRD's 5-phase plan into executable phases with clear
 **Requirements:**
 - STYLE-01 through STYLE-07
 
+**Status:** ✅ Complete (2026-02-28)
+
+**Plans:**
+- Plan 1: ✓ Complete (Color constants + Base styles + Active styles + Text styles)
+
+**Progress:** 7/7 requirements satisfied (STYLE-01, STYLE-02, STYLE-03, STYLE-04, STYLE-05, STYLE-06, STYLE-07)
+
 **Success Criteria:**
-1. All 7 styles are defined as exported constants or variables
-2. columnStyle and activeColumnStyle are visually distinct
-3. cardStyle and activeCardStyle are visually distinct
-4. titleStyle renders bold, centered text
-5. appTitleStyle renders bold, centered application title
-6. helpStyle renders dimmed text
-7. No hardcoded styles outside of styles.go
+1. ✓ All 7 styles are defined as exported constants or variables
+2. ✓ columnStyle and activeColumnStyle are visually distinct
+3. ✓ cardStyle and activeCardStyle are visually distinct
+4. ✓ titleStyle renders bold, centered text
+5. ✓ appTitleStyle renders bold, centered application title
+6. ✓ helpStyle renders dimmed text
+7. ✓ No hardcoded styles outside of styles.go
 
 **Outcomes:**
-- Consistent visual design system
-- Clear visual feedback for focused states
-- Maintainable style definitions in single file
+- ✓ Consistent visual design system
+- ✓ Clear visual feedback for focused states
+- ✓ Maintainable style definitions in single file
+- ✓ Color constants for purple (#7C3AED) and amber (#F59E0B) active states
+- ✓ All 7 styles exported for Phase 4 consumption
 
 ---
 
@@ -144,12 +161,12 @@ This roadmap transforms the PRD's 5-phase plan into executable phases with clear
 | Phase | Name | Status | Requirements | Success Criteria |
 |-------|------|--------|--------------|------------------|
 | 1 | Project Scaffold | ✅ Complete | 4/4 | 5/5 |
-| 2 | Model & State | ○ Pending | 0/9 | 0/6 |
-| 3 | Visual Styles | ○ Pending | 0/7 | 0/7 |
+| 2 | Model & State | → In Progress | 4/9 | 4/6 |
+| 3 | Visual Styles | ✅ Complete | 7/7 | 7/7 |
 | 4 | View & Layout | ○ Pending | 0/8 | 0/8 |
 | 5 | Polish & Responsive | ○ Pending | 0/8 | 0/8 |
 
-**Total:** 4/35 requirements complete | 5/34 success criteria passed
+**Total:** 15/35 requirements complete | 16/34 success criteria passed
 
 ---
 
@@ -182,4 +199,4 @@ This roadmap transforms the PRD's 5-phase plan into executable phases with clear
 
 ---
 *Roadmap created: 2026-02-28*
-*Last updated: 2026-02-28 (Phase 1 marked complete)*
+*Last updated: 2026-02-28 (Phase 3 marked complete)*
